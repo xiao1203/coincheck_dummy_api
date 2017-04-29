@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  margin: 1
+  margin_available: 1
+  margin_level: 1.5
+
+two:
+  margin: 1
+  margin_available: 1
+  margin_level: 1.5

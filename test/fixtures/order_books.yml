@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  json_body: MyText
+  trade_time_str: MyString
+
+two:
+  json_body: MyText
+  trade_time_str: MyString

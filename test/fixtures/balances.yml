@@ -1,0 +1,25 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  jpy: 1
+  btc: 1
+  jpy_reserved: 1
+  btc_reserved: 1
+  jpy_lend_in_use: 1
+  btc_lend_in_use: 1
+  jpy_lent: 1
+  btc_lent: 1
+  jpy_debt: 1
+  btc_debt: 1
+
+two:
+  jpy: 1
+  btc: 1
+  jpy_reserved: 1
+  btc_reserved: 1
+  jpy_lend_in_use: 1
+  btc_lend_in_use: 1
+  jpy_lent: 1
+  btc_lent: 1
+  jpy_debt: 1
+  btc_debt: 1

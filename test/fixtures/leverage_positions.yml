@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  order_type: 1
+  amount: 1.5
+  open_rate: 1
+  close_rate: 1
+  stop_loss_rate: 1
+  pair: MyString
+
+two:
+  order_type: 1
+  amount: 1.5
+  open_rate: 1
+  close_rate: 1
+  stop_loss_rate: 1
+  pair: MyString

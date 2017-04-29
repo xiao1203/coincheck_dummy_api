@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  api_key: MyString
+  secret_key: MyString
+  balance_id: 1
+  leverage_balance_id: 1
+
+two:
+  api_key: MyString
+  secret_key: MyString
+  balance_id: 1
+  leverage_balance_id: 1
