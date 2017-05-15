@@ -169,8 +169,8 @@ loop do
     end
   end
 
-  # 10秒待機
-  # sleep INTERVAL_TIME
+  # INTERVAL_TIME秒待機
+  sleep INTERVAL_TIME
 
   if running_back_test
     # 待機時間分、User.start_trade_timeを加算する
