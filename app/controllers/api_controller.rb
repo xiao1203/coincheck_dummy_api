@@ -313,7 +313,7 @@ class ApiController < ApplicationController
   def check_test_trade_is_over
     result = @user.test_trade_is_over?
 
-    render json: {test_trade_is_over?: result, user: @user}
+    render json: {test_trade_is_over?: result, user: @user, leverage_balance: @user.leverage_balance}
   end
 
   def update_start_trade_time
