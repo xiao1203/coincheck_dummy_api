@@ -297,7 +297,7 @@ class ApiController < ApplicationController
 
   # userにレバレッジ用の証拠金を設定
   def set_user_leverage_balance
-    @user.leverage_balance.margin += params[:margin].to_i
+    @user.leverage_balance.margin = params[:margin].to_i
     @user.leverage_balance.save!
 
     render json: "ユーザーのテスト用レバレッジ証拠金が#{@user.leverage_balance.margin}円になりました。"
