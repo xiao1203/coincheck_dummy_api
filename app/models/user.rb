@@ -33,6 +33,14 @@ class User < ApplicationRecord
   def update_start_trade_time(interval_time)
     interval_time = interval_time.to_i
     self.start_trade_time += interval_time
+    start_trade_time_str = self.start_trade_time.to_s
+
+    conv_time = Chronic.parse("#{start_trade_time_str[0...4]}/"+
+                                  "#{start_trade_time_str[4...6]}/"+
+                                  "#{start_trade_time_str[6...8]} "+
+                                  "#{start_trade_time_str[8...10]}:#{start_trade_time_str[10...12]}:#{start_trade_time_str[12...14]}")
+
+    self.start_trade_time = conv_time.strftime("%Y%m%d%H%M%S").to_i
     self.save!
   end
 end
