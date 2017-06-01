@@ -134,7 +134,7 @@ class ApiController < ApplicationController
 
     if side.present? && %(buy sell).include?(side)
       # 最新のレート
-      leverage_position = @user.leverage_positions.create(
+      @user.leverage_positions.create(
           pair: params[:pair],
           status: "open",
           open_rate: params[:rate],
@@ -145,10 +145,6 @@ class ApiController < ApplicationController
           stop_loss_rate: nil,
           pl: 0
       )
-
-      # ポジション分を証拠金から減算
-      @user.leverage_balance.margin -= leverage_position.open_rate * leverage_position.amount
-      @user.leverage_balance.save!
     elsif %(close_long close_short).include?(params[:order_type])
       leverage_position = @user.leverage_positions.find(params["position_id"])
 
@@ -158,7 +154,13 @@ class ApiController < ApplicationController
                                closed_at: Time.zone.now)
 
       # 決済文を証拠金に加算
-      @user.leverage_balance.margin += leverage_position.close_rate * leverage_position.amount
+      trade_amount = if params[:order_type] == "close_long"
+                       (leverage_position.close_rate - leverage_position.open_rate) * leverage_position.amount
+                     else
+                       (leverage_position.open_rate - leverage_position.close_rate) * leverage_position.amount
+                     end
+
+      @user.leverage_balance.margin += trade_amount
       @user.leverage_balance.save!
     end
   end
