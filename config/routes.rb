@@ -2,11 +2,13 @@ Rails.application.routes.draw do
   resource :api, only: [], controller: :api do
     collection do
       # public API
+      ## coincheck
       get :ticker
       get :trades
       get :order_books
       get :exchange_orders_rate, path: :'exchange/orders/rate'
       get :rate_pair, path: :'rate/:pair'
+
 
       # private API
       post :exchange_orders , path: :'exchange/orders'
@@ -24,5 +26,23 @@ Rails.application.routes.draw do
       put :update_start_trade_time
     end
   end
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+
+  resource :api, only: [], controller: :zaif_api do
+    collection do
+      ## 面倒なのでダミーcoincheckサーバーと相乗り
+      get :zaif_ticker, path: :'1/ticker/btc_jpy'
+      get :zaif_trades, path: :'1/trades/btc_jpy'
+      get :zaif_depth, path: :'1/depth/btc_jpy'
+    end
+  end
+
+  resource :v1, only: [], controller: :bitflyer_api do
+    collection do
+      ## 面倒なのでダミーcoincheckサーバーと相乗り
+      get :bitflyer_ticker, path: :'ticker'
+      get :bitflyer_board, path: :'board'
+      get :bitflyer_executions, path: :'executions'
+    end
+  end
+
 end

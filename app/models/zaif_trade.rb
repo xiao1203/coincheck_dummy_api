@@ -1,0 +1,2 @@
+class ZaifTrade < ApplicationRecord
+end

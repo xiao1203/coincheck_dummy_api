@@ -1,0 +1,2 @@
+class ZaifDepth < ApplicationRecord
+end

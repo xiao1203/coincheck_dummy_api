@@ -1,0 +1,2 @@
+class BitflyerBoard < ApplicationRecord
+end
