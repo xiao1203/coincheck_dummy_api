@@ -1,0 +1,2 @@
+class BitflyerExecution < ApplicationRecord
+end

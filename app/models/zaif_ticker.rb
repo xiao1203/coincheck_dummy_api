@@ -1,0 +1,2 @@
+class ZaifTicker < ApplicationRecord
+end
