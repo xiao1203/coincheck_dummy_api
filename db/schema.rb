@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170513133610) do
+ActiveRecord::Schema.define(version: 20170611144718) do
 
   create_table "balances", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.bigint "user_id", null: false, unsigned: true
@@ -24,6 +24,30 @@ ActiveRecord::Schema.define(version: 20170513133610) do
     t.integer "btc_lent", default: 0
     t.integer "jpy_debt", default: 0
     t.integer "btc_debt", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "bitflyer_boards", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "bitflyer_executions", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "bitflyer_tickers", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -48,13 +72,13 @@ ActiveRecord::Schema.define(version: 20170513133610) do
     t.string "pair"
     t.string "status"
     t.datetime "closed_at"
-    t.decimal "open_rate", precision: 10
-    t.decimal "close_rate", precision: 10
-    t.decimal "amount", precision: 10
-    t.decimal "all_amount", precision: 10
+    t.decimal "open_rate", precision: 9, scale: 3, default: "0.0", null: false
+    t.decimal "close_rate", precision: 9, scale: 3
+    t.decimal "amount", precision: 9, scale: 3, default: "0.0", null: false
+    t.decimal "all_amount", precision: 9, scale: 3, default: "0.0", null: false
     t.string "side"
-    t.decimal "stop_loss_rate", precision: 10
-    t.decimal "pl", precision: 10
+    t.decimal "stop_loss_rate", precision: 9, scale: 3
+    t.decimal "pl", precision: 9, scale: 3
     t.bigint "user_id", null: false, unsigned: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -108,6 +132,30 @@ ActiveRecord::Schema.define(version: 20170513133610) do
     t.datetime "updated_at", null: false
     t.bigint "start_trade_time", unsigned: true
     t.bigint "last_trade_time", unsigned: true
+  end
+
+  create_table "zaif_depths", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "zaif_tickers", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "zaif_trades", id: :bigint, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.text "json_body", limit: 4294967295
+    t.bigint "trade_time_int", unsigned: true
+    t.string "pair"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end
