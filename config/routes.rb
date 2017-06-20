@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       put :set_test_trade_time
       get :check_test_trade_is_over
       put :update_start_trade_time
+      delete :delete_all_positions
     end
   end
 

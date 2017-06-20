@@ -9,7 +9,8 @@ class ApiController < CommonController
                                  :trades,
                                  :order_books,
                                  :rate_pair,
-                                 :accounts_leverage_balance]
+                                 :accounts_leverage_balance,
+                                 :delete_all_positions]
 
   def ticker
     target = if @user.start_trade_time
@@ -369,6 +370,12 @@ class ApiController < CommonController
   # テストトレード開始終了時間をuserに登録する
   def set_test_trade_time
     result = @user.set_test_trade_time
+
+    render json: "処理成功"
+  end
+
+  def delete_all_positions
+    @user.leverage_positions.destroy_all
 
     render json: "処理成功"
   end
