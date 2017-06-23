@@ -13,19 +13,7 @@ class ApiController < CommonController
                                  :delete_all_positions]
 
   def ticker
-    target = if @user.start_trade_time
-               Ticker.find_by_sql("SELECT *
-                                   FROM tickers
-                                   WHERE 1 = 1
-                                   ORDER BY abs(CAST(trade_time_int AS SIGNED) - #{@user.start_trade_time})
-                                   Limit 1
-                                  ").first.json_body
-
-             else
-               Ticker.last.json_body
-             end
-
-    render json: JSON.parse(target)
+    render json: JSON.parse(ticker_json)
   end
 
   def trades
@@ -124,7 +112,8 @@ class ApiController < CommonController
   def exchange_orders
     # ポジション作成
     # TODO 現在のTickerを参考に
-    # longの時はbid以下、shortの時はask以上でないと約定しない。
+    # ポジ建てでは、longの時はask以上、shortの時はbid以下でないと約定しない。
+    # 決済注文では、long決済の時はbid以下、shortの時はask以上でないと約定しない。
     # 検証環境では確認が難しいのでこの条件に合わなかったら約定失敗としてエラーにする
     # rateは成行注文の場合、tickerレートより2%ほどレートを不利にする。指し注文はそのまま
     side = if %w(buy market_buy leverage_buy).include?(params[:order_type])
@@ -132,8 +121,16 @@ class ApiController < CommonController
            elsif %w(sell market_sell leverage_sell).include?(params[:order_type])
              "sell"
            end
-
+    ticker_hs = JSON.parse(ticker_json)
     if side.present? && %(buy sell).include?(side)
+      if side == "buy" && ticker_hs["ask"] > params[:rate]
+        # 買い注文（Long）時、askより安値での注文は約定失敗
+        render json: "error", status: 500 and return
+      elsif side == "sell" && ticker_hs["bid"] < params[:rate]
+        # 売り注文（Short）時、bidより高値での注文は約定失敗
+        render json: "error", status: 500 and return
+      end
+
       # 最新のレート
       @user.leverage_positions.create(
           pair: params[:pair],
@@ -148,6 +145,14 @@ class ApiController < CommonController
       )
     elsif %(close_long close_short).include?(params[:order_type])
       leverage_position = @user.leverage_positions.find(params["position_id"])
+
+      if side == "close_long" && ticker_hs["bid"] < params[:rate]
+        # Long決済時、bidより高値での注文は約定失敗
+        render json: "error", status: 500 and return
+      elsif side == "sell" && ticker_hs["ask"] > params[:rate]
+        # Short決済時、askより安値での注文は約定失敗
+        render json: "error", status: 500 and return
+      end
 
       # ポジションをクローズ
       leverage_position.update(status: "close",
@@ -431,5 +436,19 @@ class ApiController < CommonController
     end
 
     result
+  end
+
+  def ticker_json
+    if @user.start_trade_time
+      Ticker.find_by_sql("SELECT *
+                                   FROM tickers
+                                   WHERE 1 = 1
+                                   ORDER BY abs(CAST(trade_time_int AS SIGNED) - #{@user.start_trade_time})
+                                   Limit 1
+                                  ").first.json_body
+
+    else
+      Ticker.last.json_body
+    end
   end
 end
