@@ -228,41 +228,41 @@ class ApiController < CommonController
     #                                                                         order_type: "sell",
     #                                                                         interval_time: interval_time)
 
-    ## BtcJpyRate
-    # TODO /api/rate/btc_jpyのAPIがgemに定義されていないようなので他の処理と異なり、直接APIを叩いて取得する
-    btc_jpy_rate_saver = RateResponseSaver.new(pair: "btc_jpy",
-                                               stop_time: stop_time,
-                                               interval_time: interval_time)
-
-
-    # coincheck以外の取引所のpublicの取引情報を取得する
-    ## zaif
-    home_url = "https://api.zaif.jp/api/1"
-    zaif_ticker_response_saver = ZaifTickerResponseSaver.new(pair: "btc_jpy",
-                                                             stop_time: stop_time,
-                                                             interval_time: interval_time)
-
-    zaif_trade_response_saver = ZaifTradeResponseSaver.new(pair: "btc_jpy",
-                                                           stop_time: stop_time,
-                                                           interval_time: interval_time)
-
-    ### 板情報
-    zaif_depth_response_saver = ZaifDepthResponseSaver.new(pair: "btc_jpy",
-                                                           stop_time: stop_time,
-                                                           interval_time: interval_time)
-
-    ## bitflyer
-    bitflyer_board_response_saver = BitflyerBoardResponseSaver.new(pair: "btc_jpy",
-                                                                   stop_time: stop_time,
-                                                                   interval_time: interval_time)
-
-    bitflyer_ticker_response_saver = BitflyerTickerResponseSaver.new(pair: "btc_jpy",
-                                                                     stop_time: stop_time,
-                                                                     interval_time: interval_time)
-
-    bitflyer_execution_response_saver = BitflyerExecutionResponseSaver.new(pair: "btc_jpy",
-                                                                           stop_time: stop_time,
-                                                                           interval_time: interval_time)
+    # ## BtcJpyRate
+    # # TODO /api/rate/btc_jpyのAPIがgemに定義されていないようなので他の処理と異なり、直接APIを叩いて取得する
+    # btc_jpy_rate_saver = RateResponseSaver.new(pair: "btc_jpy",
+    #                                            stop_time: stop_time,
+    #                                            interval_time: interval_time)
+    #
+    #
+    # # coincheck以外の取引所のpublicの取引情報を取得する
+    # ## zaif
+    # home_url = "https://api.zaif.jp/api/1"
+    # zaif_ticker_response_saver = ZaifTickerResponseSaver.new(pair: "btc_jpy",
+    #                                                          stop_time: stop_time,
+    #                                                          interval_time: interval_time)
+    #
+    # zaif_trade_response_saver = ZaifTradeResponseSaver.new(pair: "btc_jpy",
+    #                                                        stop_time: stop_time,
+    #                                                        interval_time: interval_time)
+    #
+    # ### 板情報
+    # zaif_depth_response_saver = ZaifDepthResponseSaver.new(pair: "btc_jpy",
+    #                                                        stop_time: stop_time,
+    #                                                        interval_time: interval_time)
+    #
+    # ## bitflyer
+    # bitflyer_board_response_saver = BitflyerBoardResponseSaver.new(pair: "btc_jpy",
+    #                                                                stop_time: stop_time,
+    #                                                                interval_time: interval_time)
+    #
+    # bitflyer_ticker_response_saver = BitflyerTickerResponseSaver.new(pair: "btc_jpy",
+    #                                                                  stop_time: stop_time,
+    #                                                                  interval_time: interval_time)
+    #
+    # bitflyer_execution_response_saver = BitflyerExecutionResponseSaver.new(pair: "btc_jpy",
+    #                                                                        stop_time: stop_time,
+    #                                                                        interval_time: interval_time)
 
 
     seed_saving_status = SeedSavingStatus.create({
@@ -287,40 +287,40 @@ class ApiController < CommonController
       order_book_response_saver.execute!
     end
 
-    threads << generate_saving_process(btc_jpy_rate_saving_status) do
-      # rate
-      btc_jpy_rate_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      zaif_ticker_response_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      zaif_trade_response_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      zaif_depth_response_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      bitflyer_board_response_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      bitflyer_ticker_response_saver.execute!
-    end
-
-    threads << generate_saving_process do
-
-      bitflyer_execution_response_saver.execute!
-    end
+    # threads << generate_saving_process(btc_jpy_rate_saving_status) do
+    #   # rate
+    #   btc_jpy_rate_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   zaif_ticker_response_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   zaif_trade_response_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   zaif_depth_response_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   bitflyer_board_response_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   bitflyer_ticker_response_saver.execute!
+    # end
+    #
+    # threads << generate_saving_process do
+    #
+    #   bitflyer_execution_response_saver.execute!
+    # end
 
     render json: "seedデータの取得を開始しています。取り込み状況の確認は /api/check_saving_statusを実行してください。"
   end
