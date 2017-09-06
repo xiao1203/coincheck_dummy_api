@@ -185,6 +185,7 @@ class ApiController < CommonController
   # 検証環境用特殊API
   ## 過去テータになるseedファイルの作成＆保存API
   def save_seed
+    # 第一引数：API KEY 第二引数：SERCRET KEY だけど、public APIしか使わないからブランクで渡す
     cc = CoincheckClient.new("", "")
     stop_time = if params[:stop_time]
                   Time.zone.parse(params[:stop_time])
@@ -208,10 +209,42 @@ class ApiController < CommonController
                                                      status: :doing
                                                  })
 
-
     save_seed_coincheck(cc, stop_time, interval_time, seed_saving_status)
 
     render json: "seedデータの取得を開始しています。取り込み状況の確認は /api/check_saving_statusを実行してください。"
+  end
+
+  ## 過去テータになるseedファイルの作成＆保存API
+  ## に加え、一日毎小分けにして保存する
+  def auto_split_save_seed
+    # 第一引数：API KEY 第二引数：SERCRET KEY だけど、public APIしか使わないからブランクで渡す
+    cc = CoincheckClient.new("", "")
+    stop_time = if params[:stop_time]
+                  Time.zone.parse(params[:stop_time])
+                else
+                  #
+                  Time.zone.now + 1.minute;
+                end
+
+    puts "パラメータ指定時間 #{stop_time}"
+    if stop_time < Time.zone.now
+      return render json: ["指定時間超過"]
+    end
+
+    interval_time = if params[:interval_time]
+                      params[:interval_time].to_i
+                    else
+                      # 10秒
+                      10
+                    end
+    seed_saving_status = SeedSavingStatus.create({
+                                                     status: :doing
+                                                 })
+
+    auto_split_save_seed_coincheck(cc, stop_time, interval_time, seed_saving_status)
+
+    render json: "seedデータの取得を開始しています。取り込み状況の確認は /api/check_saving_statusを実行してください。"
+
   end
 
   ## save_seedの状態確認API
@@ -389,6 +422,22 @@ class ApiController < CommonController
     generate_saving_process(btc_jpy_rate_saving_status) do
       # rate
       btc_jpy_rate_saver.execute!
+    end
+  end
+
+  def auto_split_save_seed_coincheck(cc, stop_time, interval_time, seed_saving_status)
+
+    ## Ticker
+    ticker_response_saver = TickerResponseSaver.new(coincheck_client: cc,
+                                                    stop_time: stop_time,
+                                                    interval_time: interval_time)
+
+    ## model_saving_statuses
+    ticker_saving_status = create_model_saving_statuses(seed_saving_status, "ticker")
+
+    generate_saving_process(ticker_saving_status) do
+      # ticker
+      ticker_response_saver.execute!
     end
   end
 end
