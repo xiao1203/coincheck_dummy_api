@@ -204,123 +204,12 @@ class ApiController < CommonController
                       # 10秒
                       10
                     end
-
-    #FIXME なぜか、serviceインスタンスとthreadの外で作らないとうまく動かなくなった。
-    # メモリ空間で別物と見てくれないのかな？一旦動く形で作ってしまう。
-    ## Ticker
-    ticker_response_saver = TickerResponseSaver.new(coincheck_client: cc,
-                                                    stop_time: stop_time,
-                                                    interval_time: interval_time)
-
-    ## OrderBook
-    order_book_response_saver = OrderBookResponseSaver.new(coincheck_client: cc,
-                                                           stop_time: stop_time,
-                                                           interval_time: interval_time)
-
-    ## Trade
-    trade_response_saver = TradeResponseSaver.new(coincheck_client: cc,
-                                                  stop_time: stop_time,
-                                                  interval_time: interval_time)
-
-    # TODO /api/exchange/orders/rateのAPIが有効になっていないようなので一旦pending
-    # exchange_order_rate_sell_response_saver = ExchangeOrderRateResponseSaver.new(coincheck_client: cc,
-    #                                                                         stop_time: stop_time,
-    #                                                                         order_type: "sell",
-    #                                                                         interval_time: interval_time)
-
-    # ## BtcJpyRate
-    # TODO /api/rate/btc_jpyのAPIがgemに定義されていないようなので他の処理と異なり、直接APIを叩いて取得する
-    btc_jpy_rate_saver = RateResponseSaver.new(pair: "btc_jpy",
-                                               stop_time: stop_time,
-                                               interval_time: interval_time)
-    #
-    #
-    # # coincheck以外の取引所のpublicの取引情報を取得する
-    # ## zaif
-    # home_url = "https://api.zaif.jp/api/1"
-    # zaif_ticker_response_saver = ZaifTickerResponseSaver.new(pair: "btc_jpy",
-    #                                                          stop_time: stop_time,
-    #                                                          interval_time: interval_time)
-    #
-    # zaif_trade_response_saver = ZaifTradeResponseSaver.new(pair: "btc_jpy",
-    #                                                        stop_time: stop_time,
-    #                                                        interval_time: interval_time)
-    #
-    # ### 板情報
-    # zaif_depth_response_saver = ZaifDepthResponseSaver.new(pair: "btc_jpy",
-    #                                                        stop_time: stop_time,
-    #                                                        interval_time: interval_time)
-    #
-    # ## bitflyer
-    # bitflyer_board_response_saver = BitflyerBoardResponseSaver.new(pair: "btc_jpy",
-    #                                                                stop_time: stop_time,
-    #                                                                interval_time: interval_time)
-    #
-    # bitflyer_ticker_response_saver = BitflyerTickerResponseSaver.new(pair: "btc_jpy",
-    #                                                                  stop_time: stop_time,
-    #                                                                  interval_time: interval_time)
-    #
-    # bitflyer_execution_response_saver = BitflyerExecutionResponseSaver.new(pair: "btc_jpy",
-    #                                                                        stop_time: stop_time,
-    #                                                                        interval_time: interval_time)
-
-
     seed_saving_status = SeedSavingStatus.create({
                                                      status: :doing
                                                  })
-    ## model_saving_statuses
-    ticker_saving_status, trade_saving_status, order_book_saving_status, btc_jpy_rate_saving_status = create_model_saving_statuses(seed_saving_status)
 
-    threads = []
-    threads << generate_saving_process(ticker_saving_status) do
-      # ticker
-      ticker_response_saver.execute!
-    end
 
-    threads << generate_saving_process(trade_saving_status) do
-      # trade
-      trade_response_saver.execute!
-    end
-
-    threads << generate_saving_process(order_book_saving_status) do
-      # order_book
-      order_book_response_saver.execute!
-    end
-
-    threads << generate_saving_process(btc_jpy_rate_saving_status) do
-      # rate
-      btc_jpy_rate_saver.execute!
-    end
-    
-    # threads << generate_saving_process do
-    #
-    #   zaif_ticker_response_saver.execute!
-    # end
-    #
-    # threads << generate_saving_process do
-    #
-    #   zaif_trade_response_saver.execute!
-    # end
-    #
-    # threads << generate_saving_process do
-    #
-    #   zaif_depth_response_saver.execute!
-    # end
-    #
-    # threads << generate_saving_process do
-    #
-    #   bitflyer_board_response_saver.execute!
-    # end
-    #
-    # threads << generate_saving_process do
-    #
-    #   bitflyer_ticker_response_saver.execute!
-    # end
-    #
-    # threads << generate_saving_process do
-    #
-    #   bitflyer_execution_response_saver.execute!
-    # end
+    save_seed_coincheck(cc, stop_time, interval_time, seed_saving_status)
 
     render json: "seedデータの取得を開始しています。取り込み状況の確認は /api/check_saving_statusを実行してください。"
   end
@@ -424,18 +313,12 @@ class ApiController < CommonController
     thread
   end
 
-  def create_model_saving_statuses(seed_saving_status)
-    model_ary = %w(ticker trade order_book btc_jpy_rate)
-    result = []
-    model_ary.each do |model_name|
-      result << ModelSavingStatus.create({
-                                             status: :doing,
-                                             seed_saving_status_id: seed_saving_status.id,
-                                             model_number: model_name.to_sym
-                                         })
-    end
-
-    result
+  def create_model_saving_statuses(seed_saving_status, model_name)
+    ModelSavingStatus.create({
+                                 status: :doing,
+                                 seed_saving_status_id: seed_saving_status.id,
+                                 model_number: model_name.to_sym
+                             })
   end
 
   def ticker_json
@@ -449,6 +332,63 @@ class ApiController < CommonController
 
     else
       Ticker.last.json_body
+    end
+  end
+
+  def save_seed_coincheck(cc, stop_time, interval_time, seed_saving_status)
+    #FIXME なぜか、serviceインスタンスとthreadの外で作らないとうまく動かなくなった。
+    # メモリ空間で別物と見てくれないのかな？一旦動く形で作ってしまう。
+    ## Ticker
+    ticker_response_saver = TickerResponseSaver.new(coincheck_client: cc,
+                                                    stop_time: stop_time,
+                                                    interval_time: interval_time)
+
+    ## OrderBook
+    order_book_response_saver = OrderBookResponseSaver.new(coincheck_client: cc,
+                                                           stop_time: stop_time,
+                                                           interval_time: interval_time)
+
+    ## Trade
+    trade_response_saver = TradeResponseSaver.new(coincheck_client: cc,
+                                                  stop_time: stop_time,
+                                                  interval_time: interval_time)
+
+    # TODO /api/exchange/orders/rateのAPIが有効になっていないようなので一旦pending
+    # exchange_order_rate_sell_response_saver = ExchangeOrderRateResponseSaver.new(coincheck_client: cc,
+    #                                                                         stop_time: stop_time,
+    #                                                                         order_type: "sell",
+    #                                                                         interval_time: interval_time)
+
+    # ## BtcJpyRate
+    # TODO /api/rate/btc_jpyのAPIがgemに定義されていないようなので他の処理と異なり、直接APIを叩いて取得する
+    btc_jpy_rate_saver = RateResponseSaver.new(pair: "btc_jpy",
+                                               stop_time: stop_time,
+                                               interval_time: interval_time)
+
+    ## model_saving_statuses
+    ticker_saving_status = create_model_saving_statuses(seed_saving_status, "ticker")
+    trade_saving_status = create_model_saving_statuses(seed_saving_status, "trade")
+    order_book_saving_status = create_model_saving_statuses(seed_saving_status, "order_book")
+    btc_jpy_rate_saving_status = create_model_saving_statuses(seed_saving_status, "btc_jpy_rate")
+
+    generate_saving_process(ticker_saving_status) do
+      # ticker
+      ticker_response_saver.execute!
+    end
+
+    generate_saving_process(trade_saving_status) do
+      # trade
+      trade_response_saver.execute!
+    end
+
+    generate_saving_process(order_book_saving_status) do
+      # order_book
+      order_book_response_saver.execute!
+    end
+
+    generate_saving_process(btc_jpy_rate_saving_status) do
+      # rate
+      btc_jpy_rate_saver.execute!
     end
   end
 end
